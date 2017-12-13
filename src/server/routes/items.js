@@ -16,4 +16,16 @@ router.get(BASE_URL, async(ctx) => {
     }
 });
 
+router.get(`${BASE_URL}/:id`, async (ctx) => {
+    try {
+      const item = await queries.getSingleItem(ctx.params.id);
+      ctx.body = {
+        status: 'success',
+        data: item
+      };
+    } catch (err) {
+      console.log(err)
+    }
+});
+
 module.exports = router;

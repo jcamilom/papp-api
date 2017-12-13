@@ -5,6 +5,15 @@ function getAllItems() {
         .select('*');
 }
 
+function getSingleItem(id) {
+    return knex('items')
+        .select('*')
+        .where({
+            id: parseInt(id)
+        });
+}
+
 module.exports = {
-    getAllItems
+    getAllItems,
+    getSingleItem
 };
