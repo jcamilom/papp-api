@@ -92,6 +92,37 @@ describe('routes : items', () => {
                     done();
                 });
         });        
-    });    
+    });
+    
+    describe('POST /api/v1/items', () => {
+        it('should return the item that was added', (done) => {
+            chai.request(server)
+                .post('/api/v1/items')
+                .send({
+                    name: 'Sacapuntas',
+                    price: 800,
+                    nAvailable: 12
+                })
+                .end((err, res) => {
+                    // there should be no errors
+                    should.not.exist(err);
+                    // there should be a 201 status code
+                    // (indicating that something was "created")
+                    res.status.should.equal(201);
+                    // the response should be JSON
+                    res.type.should.equal('application/json');
+                    // the JSON response body should have a
+                    // key-value pair of {"status": "success"}
+                    res.body.status.should.eql('success');
+                    // the JSON response body should have a
+                    // key-value pair of {"data": 1 item object}
+                    res.body.data[0].should.include.keys(
+                        'id', 'name', 'price', 'nAvailable'
+                    );
+                    done();
+                });
+        });
+    });
+    
 
 });

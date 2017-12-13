@@ -13,7 +13,14 @@ function getSingleItem(id) {
         });
 }
 
+function addItem(item) {
+    return knex('items')
+        .insert(item)
+        .returning('*');
+}
+
 module.exports = {
     getAllItems,
-    getSingleItem
+    getSingleItem,
+    addItem
 };
