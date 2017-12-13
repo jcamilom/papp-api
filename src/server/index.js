@@ -1,14 +1,12 @@
 const Koa = require('koa');
+const indexRoutes = require('./routes/index');
+const itemRoutes = require('./routes/items');
 
 const app = new Koa();
-const PORT = 1337;
+const PORT = process.env.PORT || 1337;
 
-app.use(async(ctx) => {
-    ctx.body = {
-        status: 'success',
-        message: 'papp api'
-    };
-});
+app.use(indexRoutes.routes());
+app.use(itemRoutes.routes());
 
 const server = app.listen(PORT, () => {
     console.log(`Server listening on port: ${PORT}`);
