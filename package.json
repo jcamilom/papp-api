@@ -1,0 +1,16 @@
+{
+    "name": "papp-api",
+    "version": "1.0.0",
+    "description": "A RESTful API for papp, with Koa and Postgres",
+    "private": true,
+    "scripts": {
+        "start": "node ./src/server/index.js",
+        "test": "./node_modules/mocha/bin/_mocha"
+    },
+    "author": "Camilo Muñoz",
+    "license": "ISC",
+    "devDependencies": {
+        "chai": "4.1.1",
+        "mocha": "3.5.0"
+    }
+}
