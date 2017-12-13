@@ -122,6 +122,28 @@ describe('routes : items', () => {
                     done();
                 });
         });
+        it('should throw an error if the payload is malformed', (done) => {
+            chai.request(server)
+                .post('/api/v1/items')
+                .send({
+                    name: 'Borrador'
+                })
+                .end((err, res) => {
+                    // there should an error
+                    should.exist(err);
+                    // there should be a 400 status code
+                    res.status.should.equal(400);
+                    // the response should be JSON
+                    res.type.should.equal('application/json');
+                    // the JSON response body should have a
+                    // key-value pair of {"status": "error"}
+                    res.body.status.should.eql('error');
+                    // the JSON response body should have a message key
+                    should.exist(res.body.message);
+                    done();
+                });
+        });
+        
     });
     
 
