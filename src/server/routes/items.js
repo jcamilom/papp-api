@@ -18,13 +18,21 @@ router.get(BASE_URL, async(ctx) => {
 
 router.get(`${BASE_URL}/:id`, async (ctx) => {
     try {
-      const item = await queries.getSingleItem(ctx.params.id);
-      ctx.body = {
-        status: 'success',
-        data: item
-      };
+        const item = await queries.getSingleItem(ctx.params.id);
+        if(item.length) {
+            ctx.body = {
+                status: 'success',
+                data: item
+            };
+        } else {
+            ctx.status = 404;
+            ctx.body = {
+                status: 'error',
+                message: 'That item does not exist.'
+            };
+        }        
     } catch (err) {
-      console.log(err)
+        console.log(err)
     }
 });
 
