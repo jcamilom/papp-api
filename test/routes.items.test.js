@@ -199,8 +199,61 @@ describe('routes : items', () => {
                     res.body.message.should.eql('That item does not exist.');
                     done();
                 });
+        });        
+    });
+
+    describe('DELETE /api/v1/items/:id', () => {
+        it('should return the item that was deleted', (done) => {
+            knex('items')
+                .select('*')
+                .then((items) => {
+                    const itemObject = items[0];
+                    const lengthBeforeDelete = items.length;
+                    chai.request(server)
+                        .delete(`/api/v1/items/${itemObject.id}`)
+                        .end((err, res) => {
+                            // there should be no errors
+                            should.not.exist(err);
+                            // there should be a 200 status code
+                            res.status.should.equal(200);
+                            // the response should be JSON
+                            res.type.should.equal('application/json');
+                            // the JSON response body should have a
+                            // key-value pair of {"status": "success"}
+                            res.body.status.should.eql('success');
+                            // the JSON response body should have a
+                            // key-value pair of {"data": 1 item object}
+                            res.body.data[0].should.include.keys(
+                                'id', 'name', 'price', 'nAvailable'
+                            );
+                            // ensure the item was in fact deleted
+                            knex('items').select('*')
+                                .then((updatedItems) => {
+                                    updatedItems.length.should.eql(lengthBeforeDelete - 1);
+                                    done();
+                                });
+                        });
+                });
         });
-        
-    });   
+        it('should throw an error if the item does not exist', (done) => {
+            chai.request(server)
+                .delete('/api/v1/items/9999999')
+                .end((err, res) => {
+                    // there should an error
+                    should.exist(err);
+                    // there should be a 404 status code
+                    res.status.should.equal(404);
+                    // the response should be JSON
+                    res.type.should.equal('application/json');
+                    // the JSON response body should have a
+                    // key-value pair of {"status": "error"}
+                    res.body.status.should.eql('error');
+                    // the JSON response body should have a
+                    // key-value pair of {"message": "That item does not exist."}
+                    res.body.message.should.eql('That item does not exist.');
+                    done();
+                });
+        });
+    });    
 
 });
