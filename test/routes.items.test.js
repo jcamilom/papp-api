@@ -142,9 +142,42 @@ describe('routes : items', () => {
                     should.exist(res.body.message);
                     done();
                 });
-        });
-        
+        })
     });
-    
+
+    describe('PUT /api/v1/items', () => {
+        it('should return the item that was updated', (done) => {
+            knex('items')
+                .select('*')
+                .then((item) => {
+                    const itemObject = item[0];
+                    chai.request(server)
+                        .put(`/api/v1/items/${itemObject.id}`)
+                        .send({
+                            price: 1500
+                        })
+                        .end((err, res) => {
+                            // there should be no errors
+                            should.not.exist(err);
+                            // there should be a 200 status code
+                            res.status.should.equal(200);
+                            // the response should be JSON
+                            res.type.should.equal('application/json');
+                            // the JSON response body should have a
+                            // key-value pair of {"status": "success"}
+                            res.body.status.should.eql('success');
+                            // the JSON response body should have a
+                            // key-value pair of {"data": 1 item object}
+                            res.body.data[0].should.include.keys(
+                                'id', 'name', 'price', 'nAvailable'
+                            );
+                            // ensure the item was in fact updated
+                            const newItemObject = res.body.data[0];
+                            newItemObject.price.should.not.eql(itemObject.price);
+                            done();
+                        });
+                });
+        });
+    });   
 
 });

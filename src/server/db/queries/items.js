@@ -19,8 +19,18 @@ function addItem(item) {
         .returning('*');
 }
 
+function updateItem(id, item) {
+    return knex('items')
+        .update(item)
+        .where({
+            id: parseInt(id)
+        })
+        .returning('*');
+}
+
 module.exports = {
     getAllItems,
     getSingleItem,
-    addItem
+    addItem,
+    updateItem
 };

@@ -61,4 +61,29 @@ router.post(`${BASE_URL}`, async(ctx) => {
     }
 });
 
+router.put(`${BASE_URL}/:id`, async(ctx) => {
+    try {
+        const item = await queries.updateItem(ctx.params.id, ctx.request.body);
+        if(item.length) {
+            ctx.status = 200;
+            ctx.body = {
+                status: 'success',
+                data: item
+            };
+        } else {
+            ctx.status = 404;
+            ctx.body = {
+                status: 'error',
+                message: 'That item does not exist.'
+            };
+        }
+    } catch(err) {
+        ctx.status = 400;
+        ctx.body = {
+            status: 'error',
+            message: err.message || 'Sorry, an error has occurred.'
+        };
+    }
+});
+
 module.exports = router;
