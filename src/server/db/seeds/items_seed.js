@@ -20,5 +20,26 @@ exports.seed = (knex, Promise) => {
                 price: 25000,
                 nAvailable: 4
             });
+        })
+        .then(() => {
+            return knex('items').insert({
+                name: 'Block cuadriculado 100 hojas',
+                price: 2500,
+                nAvailable: 6
+            });
+        })
+        .then(() => {
+            return knex('items').insert({
+                name: 'Block rayado 100 hojas',
+                price: 2500,
+                nAvailable: 12
+            });
+        })
+        .then(() => {
+            return knex('items').insert({
+                name: 'Pliego de cartulina',
+                price: 600,
+                nAvailable: 25
+            });
         });
 };

@@ -3,7 +3,7 @@ exports.up = (knex, Promise) => {
         table.increments();
         table.string('name').notNullable().unique();        
         table.integer('nAvailable').notNullable();
-        table.bigint('price').notNullable();
+        table.integer('price').notNullable();
     });
 };
 
