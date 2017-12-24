@@ -8,29 +8,25 @@ chai.use(chaiHttp);
 const server = require('../src/server/index');
 const knex = require('../src/server/db/connection');
 
-describe('routes : items', () => {
+describe('routes : sales', () => {
 
     beforeEach(() => {
         return knex.migrate.rollback()
-            .then(() => {
-                return knex.migrate.latest();
-            })
-            .then(() => {
-                return knex.seed.run();
-            });
+            .then(() => { return knex.migrate.latest(); })
+            .then(() => { return knex.seed.run(); });
     });
 
     afterEach(() => {
         return knex.migrate.rollback();
     });
 
-    describe('GET /api/v1/items', () => {
-        it('should return all items', (done) => {
+    describe('GET /api/v1/sales', () => {
+        it('should return all sales', (done) => {
             chai.request(server)
-                .get('/api/v1/items')
+                .get('/api/v1/sales')
                 .end((err, res) => {
                     // there should be no errors
-                    should.not.exist(err);
+                    //should.not.exist(err);
                     // there should be a 200 status code
                     res.status.should.equal(200);
                     // the response should be JSON
@@ -39,22 +35,22 @@ describe('routes : items', () => {
                     // key-value pair of {"status": "success"}
                     res.body.status.should.eql('success');
                     // the JSON response body should have a
-                    // key-value pair of {"data": [6 item objects]}
-                    res.body.data.length.should.eql(6);
+                    // key-value pair of {"data": [3 sale objects]}
+                    res.body.data.length.should.eql(3);
                     // the first object in the data array should
                     // have the right keys
-                    res.body.data[0].should.include.all.keys(
-                        'id', 'name', 'price', 'nAvailable'
+                    res.body.data[0].should.include.keys(
+                        'id', 'createdAt', 'updatedAt', 'value', 'paid', 'paidValue', 'debtor'
                     );
                     done();
                 });
         });
     });
 
-    describe('GET /api/v1/items/:id', () => {
-        it('should respond with a single item', (done) => {
+    describe('GET /api/v1/sales/:id', () => {
+        it('should respond with a single sale', (done) => {
             chai.request(server)
-                .get('/api/v1/items/1')
+                .get('/api/v1/sales/1')
                 .end((err, res) => {
                     // there should be no errors
                     should.not.exist(err);
@@ -62,20 +58,20 @@ describe('routes : items', () => {
                     res.status.should.equal(200);
                     // the response should be JSON
                     res.type.should.equal('application/json');
-                    // the JSON response body should have a
+                    // the JSON responde body should have a
                     // key-value pair of {"status": "success"}
                     res.body.status.should.eql('success');
                     // the JSON response body should have a
-                    // key-value pair of {"data": 1 item object}
-                    res.body.data[0].should.include.all.keys(
-                        'id', 'name', 'price', 'nAvailable'
+                    // key-value pair of data {"data": 1 sale object}
+                    res.body.data[0].should.include.keys(
+                        'id', 'createdAt', 'updatedAt', 'value', 'paid', 'paidValue', 'debtor'
                     );
                     done();
                 });
         });
-        it('should throw an error if the item does not exist', (done) => {
+        it('should throw an error if the sale does not exist', (done) => {
             chai.request(server)
-                .get('/api/v1/items/9999999')
+                .get('/api/v1/sales/9999999')
                 .end((err, res) => {
                     // there should an error
                     should.exist(err);
@@ -87,21 +83,21 @@ describe('routes : items', () => {
                     // key-value pair of {"status": "error"}
                     res.body.status.should.eql('error');
                     // the JSON response body should have a
-                    // key-value pair of {"message": "That item does not exist."}
-                    res.body.message.should.eql('That item does not exist.');
+                    // key-value pair of {"message": "That sale does not exist."}
+                    res.body.message.should.eql('That sale does not exist.');
                     done();
                 });
-        });        
+        });
     });
-    
-    describe('POST /api/v1/items', () => {
-        it('should return the item that was added', (done) => {
+
+    describe('POST /api/v1/sales', () => {
+        it('should return the "simple" sale that was added', (done) => {
             chai.request(server)
-                .post('/api/v1/items')
+                .post('/api/v1/sales')
                 .send({
-                    name: 'Sacapuntas',
-                    price: 800,
-                    nAvailable: 12
+                    value: 12350,
+                    paid: true,
+                    paidValue: 12350
                 })
                 .end((err, res) => {
                     // there should be no errors
@@ -115,18 +111,52 @@ describe('routes : items', () => {
                     // key-value pair of {"status": "success"}
                     res.body.status.should.eql('success');
                     // the JSON response body should have a
-                    // key-value pair of {"data": 1 item object}
-                    res.body.data[0].should.include.all.keys(
-                        'id', 'name', 'price', 'nAvailable'
+                    // key-value pair of {"data": 1 sale object}
+                    res.body.data[0].should.include.keys(
+                        'id', 'createdAt', 'updatedAt', 'value', 'paid', 'paidValue', 'debtor'
                     );
+                    // ensure the sale's debtor key has null value
+                    const saleObject = res.body.data[0];
+                    should.equal(saleObject.debtor, null);
+                    done();
+                });
+        });
+        it('should return the "debtor" sale that was added', (done) => {
+            chai.request(server)
+                .post('/api/v1/sales')
+                .send({
+                    value: 9000,
+                    paid: false,
+                    paidValue: 1500,
+                    debtor: "Rogelio"
+                })
+                .end((err, res) => {
+                    // there should be no errors
+                    should.not.exist(err);
+                    // there should be a 201 status code
+                    // (indicating that something was "created")
+                    res.status.should.equal(201);
+                    // the response should be JSON
+                    res.type.should.equal('application/json');
+                    // the JSON response body should have a
+                    // key-value pair of {"status": "success"}
+                    res.body.status.should.eql('success');
+                    // the JSON response body should have a
+                    // key-value pair of {"data": 1 sale object}
+                    res.body.data[0].should.include.keys(
+                        'id', 'createdAt', 'updatedAt', 'value', 'paid', 'paidValue', 'debtor'
+                    );
+                    // ensure the sale's debtor key has not null value
+                    const saleObject = res.body.data[0];
+                    saleObject.debtor.should.not.equal(null);
                     done();
                 });
         });
         it('should throw an error if the payload is malformed', (done) => {
             chai.request(server)
-                .post('/api/v1/items')
+                .post('/api/v1/sales')
                 .send({
-                    name: 'Borrador'
+                    value: 3500
                 })
                 .end((err, res) => {
                     // there should an error
@@ -142,19 +172,19 @@ describe('routes : items', () => {
                     should.exist(res.body.message);
                     done();
                 });
-        })
+        });
     });
 
-    describe('PUT /api/v1/items', () => {
-        it('should return the item that was updated', (done) => {
-            knex('items')
+    describe('PUT /api/v1/sales', () => {
+        it('should return the sale that was updated', (done) => {
+            knex('sales')
                 .select('*')
-                .then((item) => {
-                    const itemObject = item[0];
+                .then((sales) => {
+                    const saleObject = sales[0];
                     chai.request(server)
-                        .put(`/api/v1/items/${itemObject.id}`)
+                        .put(`/api/v1/sales/${saleObject.id}`)
                         .send({
-                            price: 1500
+                            paidValue: 6500,
                         })
                         .end((err, res) => {
                             // there should be no errors
@@ -167,22 +197,24 @@ describe('routes : items', () => {
                             // key-value pair of {"status": "success"}
                             res.body.status.should.eql('success');
                             // the JSON response body should have a
-                            // key-value pair of {"data": 1 item object}
+                            // key-value pair of {"data": 1 sale object}
                             res.body.data[0].should.include.all.keys(
-                                'id', 'name', 'price', 'nAvailable'
+                                'id', 'createdAt', 'updatedAt', 'value', 'paid', 'paidValue', 'debtor'
                             );
-                            // ensure the item was in fact updated
-                            const newItemObject = res.body.data[0];
-                            newItemObject.price.should.not.eql(itemObject.price);
+                            // ensure the sale's updatedAt key has not null value
+                            const newSaleObject = res.body.data[0];
+                            newSaleObject.updatedAt.should.not.eql(null);
+                            // ensure the sale was in fact updated
+                            newSaleObject.paidValue.should.not.eql(saleObject.paidValue);
                             done();
                         });
                 });
         });
-        it('should throw an error if the item does not exist', (done) => {
+        it('should throw an error if the sale does not exist', (done) => {
             chai.request(server)
-                .put('/api/v1/items/9999999')
+                .put('/api/v1/sales/9999999')
                 .send({
-                    price: 1700
+                    paidValue: 1900
                 })
                 .end((err, res) => {
                     // there should an error
@@ -195,22 +227,22 @@ describe('routes : items', () => {
                     // key-value pair of {"status": "error"}
                     res.body.status.should.eql('error');
                     // the JSON response body should have a
-                    // key-value pair of {"message": "That item does not exist."}
-                    res.body.message.should.eql('That item does not exist.');
+                    // key-value pair of {"message": "That sale does not exist."}
+                    res.body.message.should.eql('That sale does not exist.');
                     done();
                 });
         });        
     });
 
-    describe('DELETE /api/v1/items/:id', () => {
-        it('should return the item that was deleted', (done) => {
-            knex('items')
+    describe('DELETE /api/v1/sales/:id', () => {
+        it('should return the sale that was deleted', (done) => {
+            knex('sales')
                 .select('*')
-                .then((items) => {
-                    const itemObject = items[0];
-                    const lengthBeforeDelete = items.length;
+                .then((sales) => {
+                    const saleObject = sales[0];
+                    const lengthBeforeDelete = sales.length;
                     chai.request(server)
-                        .delete(`/api/v1/items/${itemObject.id}`)
+                        .delete(`/api/v1/sales/${saleObject.id}`)
                         .end((err, res) => {
                             // there should be no errors
                             should.not.exist(err);
@@ -222,22 +254,22 @@ describe('routes : items', () => {
                             // key-value pair of {"status": "success"}
                             res.body.status.should.eql('success');
                             // the JSON response body should have a
-                            // key-value pair of {"data": 1 item object}
+                            // key-value pair of {"data": 1 sale object}
                             res.body.data[0].should.include.all.keys(
-                                'id', 'name', 'price', 'nAvailable'
+                                'id', 'createdAt', 'updatedAt', 'value', 'paid', 'paidValue', 'debtor'
                             );
-                            // ensure the item was in fact deleted
-                            knex('items').select('*')
-                                .then((updatedItems) => {
-                                    updatedItems.length.should.eql(lengthBeforeDelete - 1);
+                            // ensure the sale was in fact deleted
+                            knex('sales').select('*')
+                                .then((updatedSales) => {
+                                    updatedSales.length.should.eql(lengthBeforeDelete - 1);
                                     done();
                                 });
                         });
                 });
         });
-        it('should throw an error if the item does not exist', (done) => {
+        it('should throw an error if the sale does not exist', (done) => {
             chai.request(server)
-                .delete('/api/v1/items/9999999')
+                .delete('/api/v1/sales/9999999')
                 .end((err, res) => {
                     // there should an error
                     should.exist(err);
@@ -249,11 +281,13 @@ describe('routes : items', () => {
                     // key-value pair of {"status": "error"}
                     res.body.status.should.eql('error');
                     // the JSON response body should have a
-                    // key-value pair of {"message": "That item does not exist."}
-                    res.body.message.should.eql('That item does not exist.');
+                    // key-value pair of {"message": "That sale does not exist."}
+                    res.body.message.should.eql('That sale does not exist.');
                     done();
                 });
         });
     });
+   
+
 
 });
