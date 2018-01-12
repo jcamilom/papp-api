@@ -5,7 +5,16 @@
     "private": true,
     "scripts": {
         "start": "node ./src/server/index.js",
-        "test": "./node_modules/mocha/bin/_mocha"
+        "test": "mocha",
+        "migrate:latest--dev": "knex migrate:latest --env development",
+        "migrate:latest--test": "knex migrate:latest --env test",
+        "migrate:rollback--dev": "knex migrate:rollback --env development",
+        "migrate:rollback--test": "knex migrate:rollback --env test",
+        "migrate:make": "knex migrate:make",
+        "seed:run--dev": "knex seed:run --env development",
+        "seed:run--test": "knex seed:run --env test",
+        "seed:make": "knex seed:make"
+        
     },
     "author": "Camilo Muñoz",
     "license": "ISC",
